@@ -10,6 +10,7 @@ export default function BreachReport({ content }) {
       background: 'var(--dark)',
       borderTop: '1px solid var(--border)',
       borderBottom: '1px solid var(--border)',
+      overflow: 'hidden',
     }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
@@ -69,6 +70,11 @@ export default function BreachReport({ content }) {
           <span style={{ color: 'var(--red)', flexShrink: 0 }}>NEXT UPDATE IN 24H</span>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 480px) {
+          #breach { padding: 60px 16px !important; }
+        }
+      `}</style>
     </section>
   )
 }

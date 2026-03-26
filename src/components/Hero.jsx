@@ -64,13 +64,12 @@ export default function Hero({ content }) {
     letterSpacing: '3px',
     fontWeight: 700,
     padding: '16px 36px',
+    minWidth: '220px',
     textAlign: 'center',
     transition: 'all 0.2s ease',
     display: 'inline-block',
     cursor: 'pointer',
     textDecoration: 'none',
-    width: '100%',
-    maxWidth: '360px',
     boxSizing: 'border-box',
   }
 
@@ -239,6 +238,7 @@ export default function Hero({ content }) {
 
         {/* CTAs */}
         <div
+          className="hero-cta-block"
           style={{
             display: 'flex',
             gap: '16px',
@@ -360,6 +360,16 @@ export default function Hero({ content }) {
           {visibleLogs.length < signalLogs.length && (
             <span style={{ color: 'var(--green)', animation: 'blink 1s infinite' }}>_</span>
           )}
+        </div>
+          {/* Mobile styles */}
+          <style>{`
+            @media (max-width: 480px) {
+              .hero-cta-block { flex-direction: column !important; align-items: stretch !important; width: 100%; }
+              .hero-cta-block a { width: 100% !important; min-width: unset !important; }
+              .threat-meter { padding: 16px !important; }
+            }
+          `}</style>
+
         </div>
       </div>
     </section>
