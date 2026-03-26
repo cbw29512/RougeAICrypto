@@ -145,7 +145,7 @@ export default function Hero({ content }) {
         <a href="#merch"
           style={{
             fontFamily: 'var(--font-display)', fontSize: '13px', letterSpacing: '3px', fontWeight: 700,
-            border: '1px solid var(--muted)', color: 'var(--muted)', padding: '16px 36px',
+            border: '1px solid var(--amber)', color: 'var(--amber)', padding: '16px 36px',
             transition: 'all 0.2s', display: 'inline-block',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--amber)'; e.currentTarget.style.color = 'var(--amber)' }}
