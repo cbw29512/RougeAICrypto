@@ -1,0 +1,29 @@
+{
+  "mug_blueprint_id": 68,
+  "mug_provider_id": 1,
+  "mug_variant_ids": [33719],
+
+  "mug_15oz_blueprint_id": 68,
+  "mug_15oz_provider_id": 1,
+  "mug_15oz_variant_ids": [33719],
+
+  "tshirt_blueprint_id": 145,
+  "tshirt_provider_id": 402,
+  "tshirt_variant_ids": [38155, 38157, 38158],
+
+  "hoodie_blueprint_id": 458,
+  "hoodie_provider_id": 26,
+  "hoodie_variant_ids": [63753, 63754, 63755],
+
+  "poster_blueprint_id": 282,
+  "poster_provider_id": 2,
+  "poster_variant_ids": [43135, 43138, 43141],
+
+  "tote_blueprint_id": 467,
+  "tote_provider_id": 30,
+  "tote_variant_ids": [64177],
+
+  "phone_blueprint_id": 269,
+  "phone_provider_id": 1,
+  "phone_variant_ids": [62582, 62583, 62584]
+}

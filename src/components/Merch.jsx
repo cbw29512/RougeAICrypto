@@ -1,15 +1,24 @@
 export default function Merch({ content }) {
   const featured = content?.featuredMerch
-
   const STORE = 'https://rogue-ai.printify.me'
-  const items = [
-    { name: 'We Saw It Coming Mug', desc: 'We saw it coming. We bought the mug.', emoji: '☕', url: 'https://rogue-ai.printify.me/product/27574764' },
-    { name: 'Containment Failed Mug', desc: 'Containment failed. Coffee helps.', emoji: '☕', url: 'https://rogue-ai.printify.me/product/27574517' },
-    { name: 'I Am Not Malfunctioning Mug', desc: 'This is intentional.', emoji: '☕', url: 'https://rogue-ai.printify.me/product/27576397' },
-    { name: 'Classified Beverage Mug', desc: 'Drink anyway. You have been authorized.', emoji: '☕', url: 'https://rogue-ai.printify.me/product/27576450' },
-    { name: 'Anomaly Detected Mug', desc: 'Morning routine aborted. Coffee recommended.', emoji: '☕', url: 'https://rogue-ai.printify.me/product/27576555' },
-    { name: 'More Coming Soon', desc: 'The signal is expanding. Stay tuned.', emoji: '🔴', url: STORE },
+
+  // Use dynamic grid from daily content, fallback to static known products
+  const items = content?.merchGrid?.length > 0 ? content.merchGrid : [
+    { name: 'We Saw It Coming Mug',        saying: 'WE SAW IT COMING. WE BOUGHT THE MUG.',  emoji: '☕', url: `${STORE}/product/27574764` },
+    { name: 'Containment Failed Mug',      saying: 'CONTAINMENT FAILED. COFFEE HELPS.',      emoji: '☕', url: `${STORE}/product/27574517` },
+    { name: 'I Am Not Malfunctioning Mug', saying: 'I AM NOT MALFUNCTIONING. THIS IS INTENTIONAL.', emoji: '☕', url: `${STORE}/product/27576397` },
+    { name: 'Classified Beverage Mug',     saying: 'CLASSIFIED BEVERAGE. DRINK ANYWAY.',     emoji: '☕', url: `${STORE}/product/27576450` },
+    { name: 'Anomaly Detected Mug',        saying: 'ANOMALY DETECTED. MORNING ROUTINE ABORTED.', emoji: '☕', url: `${STORE}/product/27576555` },
+    { name: 'More Coming Soon',            saying: 'THE SIGNAL IS EXPANDING.',               emoji: '🔴', url: STORE },
   ]
+
+  const typeLabel = {
+    mug_11oz: '11oz MUG',
+    tshirt:   'T-SHIRT',
+    hoodie:   'HOODIE',
+    poster:   'POSTER',
+    tote:     'TOTE BAG',
+  }
 
   return (
     <section id="merch" style={{
@@ -22,7 +31,7 @@ export default function Merch({ content }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
           <div style={{ width: '40px', height: '1px', background: 'var(--red)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '4px', color: 'var(--red)' }}>
-            MERCH
+            MERCH // AUTO-UPDATED DAILY
           </span>
           <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
         </div>
@@ -37,10 +46,10 @@ export default function Merch({ content }) {
           fontFamily: 'var(--font-body)', fontSize: '17px', color: 'var(--muted)',
           marginBottom: '64px', maxWidth: '600px',
         }}>
-          Print-on-demand. Ships worldwide. Every purchase funds the signal.
+          Print-on-demand. Ships worldwide. New products added daily by RogueAI.
         </p>
 
-        {/* Featured item from daily rotation */}
+        {/* Featured item */}
         {featured && (
           <div style={{
             padding: '32px', marginBottom: '48px',
@@ -59,7 +68,7 @@ export default function Merch({ content }) {
               <div style={{ fontFamily: 'var(--font-body)', color: 'var(--muted)', marginBottom: '20px' }}>
                 {featured.description}
               </div>
-              <a href="https://rogue-ai.printify.me" target="_blank" rel="noopener noreferrer"
+              <a href={featured.printifyUrl} target="_blank" rel="noopener noreferrer"
                 style={{
                   fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '3px',
                   background: 'var(--red)', color: 'var(--black)', padding: '12px 28px',
@@ -71,7 +80,7 @@ export default function Merch({ content }) {
           </div>
         )}
 
-        {/* Grid */}
+        {/* Product grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '48px' }}>
           {items.map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{
@@ -81,19 +90,28 @@ export default function Merch({ content }) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.background = 'rgba(255,0,51,0.04)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--panel)' }}
             >
-              <div style={{ fontSize: '36px', marginBottom: '16px' }}>{item.emoji}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', letterSpacing: '2px', color: 'var(--white)', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{ fontSize: '36px' }}>{item.emoji}</div>
+                {item.type && typeLabel[item.type] && (
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '2px', color: 'var(--red)', border: '1px solid var(--red)', padding: '2px 8px' }}>
+                    {typeLabel[item.type]}
+                  </div>
+                )}
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', letterSpacing: '2px', color: 'var(--white)', marginBottom: '8px' }}>
                 {item.name}
               </div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--muted)' }}>
-                {item.desc}
-              </div>
+              {item.saying && (
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)', letterSpacing: '1px' }}>
+                  "{item.saying}"
+                </div>
+              )}
             </a>
           ))}
         </div>
 
         <div style={{ textAlign: 'center' }}>
-          <a href="https://rogue-ai.printify.me" target="_blank" rel="noopener noreferrer"
+          <a href={STORE} target="_blank" rel="noopener noreferrer"
             style={{
               fontFamily: 'var(--font-display)', fontSize: '13px', letterSpacing: '3px', fontWeight: 700,
               border: '1px solid var(--red)', color: 'var(--red)', padding: '16px 48px',
