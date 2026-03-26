@@ -361,16 +361,16 @@ export default function Hero({ content }) {
             <span style={{ color: 'var(--green)', animation: 'blink 1s infinite' }}>_</span>
           )}
         </div>
-          {/* Mobile styles */}
-          <style>{`
-            @media (max-width: 480px) {
-              .hero-cta-block { flex-direction: column !important; align-items: stretch !important; width: 100%; }
-              .hero-cta-block a { width: 100% !important; min-width: unset !important; }
-              .threat-meter { padding: 16px !important; }
-            }
-          `}</style>
 
-        </div>
+        {/* Mobile styles */}
+        <style>{`
+          @media (max-width: 480px) {
+            .hero-cta-block { flex-direction: column !important; align-items: stretch !important; width: 100%; }
+            .hero-cta-block a { width: 100% !important; min-width: unset !important; }
+            .threat-meter { padding: 16px !important; }
+          }
+        `}</style>
+
       </div>
     </section>
   )
