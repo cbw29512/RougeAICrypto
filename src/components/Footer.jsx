@@ -65,6 +65,7 @@ export default function Footer() {
           padding: '20px', background: 'var(--void)', border: '1px solid var(--border)',
           fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--muted)',
           lineHeight: '1.9', letterSpacing: '1px',
+          wordBreak: 'break-word', overflowWrap: 'break-word',
         }}>
           <span style={{ color: 'var(--amber)', letterSpacing: '3px', display: 'block', marginBottom: '8px' }}>
             ⚠ SATIRICAL CONTENT DISCLOSURE
@@ -91,10 +92,11 @@ export default function Footer() {
           footer > div > div:first-child { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width: 480px) {
+          footer { padding: 40px 16px 32px !important; }
           footer > div > div:first-child { grid-template-columns: 1fr !important; gap: 0 !important; }
           footer > div > div:first-child > div { padding: 20px 0; border-bottom: 1px solid var(--border); }
           footer > div > div:first-child > div:last-child { border-bottom: none; }
-          .footer-disclaimer { font-size: 11px !important; }
+          .footer-disclaimer { font-size: 11px !important; letter-spacing: 0 !important; }
         }
       `}</style>
     </footer>
