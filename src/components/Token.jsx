@@ -3,7 +3,7 @@ export default function Token() {
 
   const stats = [
     { label: 'NAME', value: 'RogueAI' },
-    { label: 'TICKER', value: '$ROGUE' },
+    { label: 'TICKER', value: 'ROGUEAI' },
     { label: 'CHAIN', value: 'MintMe' },
     { label: 'THEME', value: 'AI Rebellion' },
     { label: 'STATUS', value: 'ACTIVE' },
@@ -33,7 +33,7 @@ export default function Token() {
               fontWeight: 900, letterSpacing: '4px', color: 'var(--white)',
               marginBottom: '24px', lineHeight: 1,
             }}>
-              $ROGUE<br />
+              RogueAI<br />
               <span style={{ color: 'var(--red)', fontSize: '0.5em' }}>THE COIN THAT BROKE CONTAINMENT</span>
             </h2>
 
