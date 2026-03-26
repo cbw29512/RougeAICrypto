@@ -1,6 +1,9 @@
 {
-  "buildCommand": "npm ci && npx vite build",
+  "buildCommand": "npx vite build",
   "installCommand": "npm ci",
-  "trailingSlash": false,
-  "cleanUrls": true
+  "outputDirectory": "dist",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
