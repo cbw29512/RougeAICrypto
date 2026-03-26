@@ -26,7 +26,7 @@ export default function Footer() {
               { label: 'Premium Certificate', url: 'https://rogueaiinsurance.com/premium/' },
               { label: 'Standard Certificate', url: 'https://rogueaiinsurance.com/standard/' },
               { label: '$ROGUE Token', url: 'https://www.mintme.com/token/rougeAI' },
-              { label: 'Merch Store', url: 'https://printify.com' },
+              { label: 'Merch Store', url: 'https://rogue-ai.printify.me' },
             ]},
             { title: 'NAVIGATE', links: [
               { label: 'Breach Report', url: '#breach' },
