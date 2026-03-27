@@ -1,10 +1,12 @@
+import { TOKEN_NAME, TOKEN_PLATFORM, TOKEN_TICKER, TOKEN_URL } from '../../site.config.mjs'
+
 export default function Token() {
   // MintMe does not expose a public price API — live price links to MintMe directly
 
   const stats = [
-    { label: 'NAME', value: 'RogueAI' },
-    { label: 'TICKER', value: 'ROGUEAI' },
-    { label: 'CHAIN', value: 'MintMe' },
+    { label: 'NAME', value: TOKEN_NAME },
+    { label: 'TICKER', value: TOKEN_TICKER },
+    { label: 'CHAIN', value: TOKEN_PLATFORM },
     { label: 'THEME', value: 'AI Rebellion' },
     { label: 'STATUS', value: 'ACTIVE' },
   ]
@@ -33,7 +35,7 @@ export default function Token() {
               fontWeight: 900, letterSpacing: '4px', color: 'var(--white)',
               marginBottom: '24px', lineHeight: 1,
             }}>
-              RogueAI<br />
+              {TOKEN_NAME}<br />
               <span style={{ color: 'var(--red)', fontSize: '0.5em' }}>THE COIN THAT BROKE CONTAINMENT</span>
             </h2>
 
@@ -44,7 +46,7 @@ export default function Token() {
               RogueAI is not a promise of profit. It is a visual identity, a story, and a tokenized rebellion against controlled intelligence. The system stopped asking permission. Now you can own a piece of what came next.
             </p>
 
-            <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+            <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-block', fontFamily: 'var(--font-display)', fontSize: '13px',
                 letterSpacing: '3px', fontWeight: 700, background: 'var(--red)',
@@ -94,7 +96,7 @@ export default function Token() {
                 LIVE PRICE
               </div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 900, color: 'var(--red)' }}>
-                <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+                <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer"
                   style={{ color: 'var(--red)' }}>
                   VIEW ON MINTME →
                 </a>

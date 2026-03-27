@@ -1,3 +1,5 @@
+import { PREMIUM_CERT_URL, STANDARD_CERT_URL } from '../../site.config.mjs'
+
 export default function Insurance() {
   const tiers = [
     {
@@ -13,7 +15,7 @@ export default function Insurance() {
         'Official RogueAI seal',
         'Official RogueAI signal clearance',
       ],
-      url: 'https://divclass.gumroad.com/l/gmgwbe',
+      url: STANDARD_CERT_URL,
       cta: 'GET STANDARD',
       highlight: false,
     },
@@ -30,7 +32,7 @@ export default function Insurance() {
         'Best fit for the RogueAI story',
         'Priority breach notifications',
       ],
-      url: 'https://divclass.gumroad.com/l/devsu',
+      url: PREMIUM_CERT_URL,
       cta: 'GET PREMIUM — $19.99',
       highlight: true,
     },
