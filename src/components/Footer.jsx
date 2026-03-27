@@ -1,3 +1,13 @@
+import {
+  INSURANCE_SITE_URL,
+  LOGO_PATH,
+  MERCH_STORE_URL,
+  PREMIUM_CERT_URL,
+  SITE_NAME,
+  STANDARD_CERT_URL,
+  TOKEN_URL,
+} from '../../site.config.mjs'
+
 export default function Footer() {
   return (
     <footer style={{
@@ -10,9 +20,9 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <img src="/rogueai-logo.png" alt="RogueAI" style={{ width: 32, height: 32, filter: 'drop-shadow(0 0 6px var(--red))' }} />
+              <img src={LOGO_PATH} alt={SITE_NAME} style={{ width: 32, height: 32, filter: 'drop-shadow(0 0 6px var(--red))' }} />
               <span style={{ fontFamily: 'var(--font-display)', fontSize: '14px', letterSpacing: '3px', color: 'var(--white)' }}>
-                ROGUEAI
+                {SITE_NAME}
               </span>
             </div>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--muted)', lineHeight: '1.7', maxWidth: '280px' }}>
@@ -23,10 +33,10 @@ export default function Footer() {
           {/* Links */}
           {[
             { title: 'PRODUCTS', links: [
-              { label: 'Premium Certificate', url: 'https://divclass.gumroad.com/l/devsu' },
-              { label: 'Standard Certificate', url: 'https://divclass.gumroad.com/l/gmgwbe' },
-              { label: 'RogueAI Token', url: 'https://www.mintme.com/token/RogueAI' },
-              { label: 'Merch Store', url: 'https://rogue-ai.printify.me' },
+              { label: 'Premium Certificate', url: PREMIUM_CERT_URL },
+              { label: 'Standard Certificate', url: STANDARD_CERT_URL },
+              { label: 'RogueAI Token', url: TOKEN_URL },
+              { label: 'Merch Store', url: MERCH_STORE_URL },
             ]},
             { title: 'NAVIGATE', links: [
               { label: 'Breach Report', url: '#breach' },
@@ -35,8 +45,8 @@ export default function Footer() {
               { label: 'Roadmap', url: '#roadmap' },
             ]},
             { title: 'SIGNAL', links: [
-              { label: 'rogueaiinsurance.com', url: 'https://rogueaiinsurance.com/' },
-              { label: 'MintMe Token', url: 'https://www.mintme.com/token/RogueAI' },
+              { label: 'rogueaiinsurance.com', url: INSURANCE_SITE_URL },
+              { label: 'MintMe Token', url: TOKEN_URL },
             ]},
           ].map((col, i) => (
             <div key={i}>

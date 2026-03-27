@@ -1,3 +1,8 @@
+import {
+  LOGO_URL,
+  MERCH_STORE_URL,
+} from '../site.config.mjs'
+
 /**
  * RogueAI Daily Content Generator
  * ================================
@@ -31,8 +36,7 @@ const SAYINGS_PATH = path.join(ROOT, 'scripts', 'rogueai-sayings.json')
 const HISTORY_PATH = path.join(ROOT, 'scripts', 'product-history.json')
 const OUTPUT_PATH  = path.join(ROOT, 'public',  'daily-content.json')
 
-const LOGO_URL     = 'https://rogueaicrypto.com/rogueai-logo.png'
-const STORE_URL    = 'https://rogue-ai.printify.me/'
+const STORE_URL    = MERCH_STORE_URL.endsWith('/') ? MERCH_STORE_URL : `${MERCH_STORE_URL}/`
 
 // Weekly top-7 rotation order (Version 1: only mug_11oz is active until other IDs are filled)
 const PRODUCT_ROTATION = [

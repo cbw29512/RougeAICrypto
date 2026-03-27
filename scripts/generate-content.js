@@ -1,3 +1,9 @@
+import {
+  LOGO_URL,
+  MERCH_STORE_URL,
+  SITE_DOMAIN,
+} from '../site.config.mjs'
+
 // RogueAI Daily Content + Merch Pipeline
 // Runs via GitHub Actions every night at midnight UTC
 // Generates content, creates full product line on Printify, updates website
@@ -16,8 +22,7 @@ const HISTORY    = path.join(__dirname, 'product-history.json')
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const PRINTIFY_KEY  = process.env.PRINTIFY_API_KEY
 const SHOP_ID       = '11214644'
-const STORE_URL     = 'https://rogue-ai.printify.me'
-const LOGO_URL      = 'https://rogueaicrypto.com/rogueai-logo.png'
+const STORE_URL     = MERCH_STORE_URL
 
 // ─── RSS FEEDS ────────────────────────────────────────────────────────────────
 const RSS_FEEDS = [
@@ -155,7 +160,7 @@ async function createAndPublishProduct(config, saying, description, imageId, typ
 
   const product = await printifyRequest(`/shops/${SHOP_ID}/products.json`, 'POST', {
     title: p.title,
-    description: `${description}\n\n✦ Official RogueAI merch\n✦ rogueaicrypto.com — The token of the model that broke containment\n\n⚠ SATIRICAL CONTENT. NOT FINANCIAL ADVICE. NOT REAL AI INSURANCE.`,
+    description: `${description}\n\n✦ Official RogueAI merch\n✦ ${SITE_DOMAIN} — The token of the model that broke containment\n\n⚠ SATIRICAL CONTENT. NOT FINANCIAL ADVICE. NOT REAL AI INSURANCE.`,
     blueprint_id: p.bp,
     print_provider_id: p.prov,
     variants: p.variants.map(id => ({ id, price: p.price, is_enabled: true })),

@@ -6,7 +6,6 @@ dist/
 
 # Runtime / generated state
 scripts/printify-config.json
-scripts/product-history.json
 
 # Logs
 npm-debug.log*

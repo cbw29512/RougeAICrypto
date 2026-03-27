@@ -1,6 +1,8 @@
+import { MERCH_STORE_URL } from '../../site.config.mjs'
+
 export default function Merch({ content }) {
   const featured = content?.featuredMerch
-  const STORE = 'https://rogue-ai.printify.me'
+  const STORE = MERCH_STORE_URL
 
   // Use dynamic grid from daily content, fallback to static known products
   const items = content?.merchGrid?.length > 0 ? content.merchGrid : [

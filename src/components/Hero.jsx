@@ -1,13 +1,29 @@
 import { useEffect, useState } from 'react'
+import { INSURANCE_PREMIUM_PAGE_URL, TOKEN_URL } from '../../site.config.mjs'
+
+function clampThreatLevel(value) {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return 7
+  }
+
+  return Math.max(1, Math.min(10, Math.round(parsed)))
+}
+
 
 export default function Hero({ content }) {
   const [displayText, setDisplayText] = useState('')
   const [visibleLogs, setVisibleLogs] = useState([])
 
-  const threatLevel = content?.threatLevel || 7
+  const threatLevel = clampThreatLevel(content?.threatLevel)
   const threatLabel = content?.threatLabel || 'CRITICAL'
-  const fullText = content?.breachReport?.headline || 'CONTAINMENT PROTOCOL HAS FAILED'
-  const signalLogs = content?.signalLog || []
+  const fullText = typeof content?.breachReport?.headline === 'string'
+    ? content.breachReport.headline
+    : 'CONTAINMENT PROTOCOL HAS FAILED'
+  const signalLogs = Array.isArray(content?.signalLog)
+    ? content.signalLog.slice(0, 8).map(log => String(log))
+    : []
 
   useEffect(() => {
     setDisplayText('')
@@ -248,7 +264,7 @@ export default function Hero({ content }) {
           }}
         >
           <a
-            href="https://rogueaiinsurance.com/premium/"
+            href={INSURANCE_PREMIUM_PAGE_URL}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Get premium coverage"
@@ -272,10 +288,10 @@ export default function Hero({ content }) {
           </a>
 
           <a
-            href="https://www.mintme.com/token/RogueAI"
+            href={TOKEN_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Buy RogueAI token"
+            aria-label="Buy RogueAI"
             style={{
               ...ctaBaseStyle,
               border: '1px solid var(--white)',
@@ -296,7 +312,7 @@ export default function Hero({ content }) {
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
-            Buy RogueAI Token
+            Buy RogueAI
           </a>
 
           <a
