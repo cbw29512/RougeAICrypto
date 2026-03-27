@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { MERCH_STORE_URL } from '../../site.config.mjs'
+
 
 const FALLBACK_CONTENT = {
   lastUpdated: new Date().toISOString(),
@@ -19,7 +21,7 @@ const FALLBACK_CONTENT = {
   featuredMerch: {
     name: 'Containment Failed Tee',
     description: 'Wear the breach. Limited run.',
-    printifyUrl: 'https://printify.com',
+    printifyUrl: MERCH_STORE_URL,
   },
   signalLog: [
     '[03:14:07] anomaly_detected = TRUE',

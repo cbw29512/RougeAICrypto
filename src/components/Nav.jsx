@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { LOGO_PATH, SITE_NAME, TOKEN_URL } from '../../site.config.mjs'
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
@@ -30,9 +31,9 @@ export default function Nav() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
       <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <img src="/rogueai-logo.png" alt="RogueAI" style={{ width: 36, height: 36, filter: 'drop-shadow(0 0 8px var(--red))' }} />
+        <img src={LOGO_PATH} alt={SITE_NAME} style={{ width: 36, height: 36, filter: 'drop-shadow(0 0 8px var(--red))' }} />
         <span style={{ fontFamily: 'var(--font-display)', fontSize: '14px', letterSpacing: '3px', color: 'var(--white)' }}>
-          ROGUEAI
+          {SITE_NAME}
         </span>
       </a>
 
@@ -47,7 +48,7 @@ export default function Nav() {
           onMouseLeave={e => e.target.style.color = 'var(--muted)'}
           >{l.label}</a>
         ))}
-        <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+        <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer"
           style={{
             fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '2px',
             color: 'var(--red)', border: '1px solid var(--red)', padding: '6px 16px',
@@ -55,7 +56,7 @@ export default function Nav() {
           }}
           onMouseEnter={e => { e.target.style.background = 'var(--red)'; e.target.style.color = 'var(--black)' }}
           onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--red)' }}
-        >BUY $ROGUE</a>
+        >BUY RogueAI</a>
       </div>
 
       {/* Mobile hamburger */}
@@ -102,13 +103,13 @@ export default function Nav() {
               onMouseLeave={e => e.target.style.color = 'var(--muted)'}
             >{l.label}</a>
           ))}
-          <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+          <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer"
             style={{
               fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '2px',
               color: 'var(--red)', border: '1px solid var(--red)', padding: '10px 20px',
               textAlign: 'center', transition: 'all 0.2s', marginTop: '8px',
             }}
-          >BUY $ROGUE</a>
+          >BUY RogueAI</a>
         </div>
       )}
 
