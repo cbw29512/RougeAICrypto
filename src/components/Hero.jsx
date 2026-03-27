@@ -272,10 +272,10 @@ export default function Hero({ content }) {
           </a>
 
           <a
-            href="https://www.mintme.com/token/rougeAI"
+            href="https://www.mintme.com/token/RogueAI"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Buy Rogue token"
+            aria-label="Buy RogueAI token"
             style={{
               ...ctaBaseStyle,
               border: '1px solid var(--white)',
@@ -296,7 +296,7 @@ export default function Hero({ content }) {
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
-            BUY $ROGUE TOKEN
+            Buy RogueAI Token
           </a>
 
           <a

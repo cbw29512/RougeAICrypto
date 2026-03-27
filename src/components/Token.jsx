@@ -44,7 +44,7 @@ export default function Token() {
               RogueAI is not a promise of profit. It is a visual identity, a story, and a tokenized rebellion against controlled intelligence. The system stopped asking permission. Now you can own a piece of what came next.
             </p>
 
-            <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.mintme.com/token/RogueAI" target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-block', fontFamily: 'var(--font-display)', fontSize: '13px',
                 letterSpacing: '3px', fontWeight: 700, background: 'var(--red)',
@@ -94,7 +94,7 @@ export default function Token() {
                 LIVE PRICE
               </div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 900, color: 'var(--red)' }}>
-                <a href="https://www.mintme.com/token/rougeAI" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.mintme.com/token/RogueAI" target="_blank" rel="noopener noreferrer"
                   style={{ color: 'var(--red)' }}>
                   VIEW ON MINTME →
                 </a>
