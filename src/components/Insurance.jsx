@@ -16,7 +16,7 @@ export default function Insurance() {
         'Official RogueAI signal clearance',
       ],
       url: STANDARD_CERT_URL,
-      cta: 'GET STANDARD',
+      cta: 'GET STANDARD - $9.99',
       highlight: false,
     },
     {
