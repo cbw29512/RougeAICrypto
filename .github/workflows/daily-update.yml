@@ -27,12 +27,4 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ROGUEAI }}
           PRINTIFY_API_KEY: ${{ secrets.ROGUEAI_PRINTIFY }}
-        run: node scripts/generate-content.js
-
-      - name: Commit and push
-        run: |
-          git config --global user.name "cbw29512"
-          git config --global user.email "DIVCLASS01@gmail.com"
-          git add public/daily-content.json
-          git diff --staged --quiet || git commit -m "🔴 Daily breach report — $(date -u '+%Y-%m-%d %H:%M UTC')"
-          git push
+        run: npm run validate:merch
