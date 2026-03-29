@@ -27,4 +27,4 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ROGUEAI }}
           PRINTIFY_API_KEY: ${{ secrets.ROGUEAI_PRINTIFY }}
-        run: npm run validate:merch
+        run: npm run validate:merch && npm run publish:next
