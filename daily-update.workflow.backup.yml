@@ -1,0 +1,38 @@
+name: Daily RogueAI Content + Merch Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-content:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install node-fetch@3 rss-parser@3
+
+      - name: Run RogueAI pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ROGUEAI }}
+          PRINTIFY_API_KEY: ${{ secrets.ROGUEAI_PRINTIFY }}
+        run: node scripts/generate-content.js
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "cbw29512"
+          git config --global user.email "DIVCLASS01@gmail.com"
+          git add public/daily-content.json
+          git diff --staged --quiet || git commit -m "🔴 Daily breach report — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

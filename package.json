@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "validate:merch": "node ./scripts/validate-merch-pipeline.mjs"
-},
+    "validate:merch": "node ./scripts/validate-merch-pipeline.mjs",
+    "publish:next": "node ./scripts/publish-next-approved.mjs"
+  },
   "dependencies": {
     "node-fetch": "^3.3.2",
     "react": "^18.2.0",
