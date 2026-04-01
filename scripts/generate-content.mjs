@@ -1,29 +1,25 @@
+/**
+ * RogueAI Daily Content Generator
+ * ================================
+ * Full path: C:\Users\divcl\OneDrive\Desktop\RogueAICrypto\scripts\generate-content.mjs
+ * GitHub:    cbw29512/RogueAICrypto/scripts/generate-content.mjs
+ *
+ * Objective:
+ * - One run per day via GitHub Actions.
+ * - Generate one new saying via Claude Haiku (dark humor + altruism).
+ * - Create saying-only designs using rotating computer-generated fonts.
+ * - Create 4 products on Printify: mug (20oz), tshirt, hoodie, sticker.
+ * - Build daily-content.json for the website.
+ */
+
 import {
   LOGO_URL,
   MERCH_STORE_URL,
 } from '../site.config.mjs'
 
-/**
- * RogueAI Daily Content Generator
- * ================================
- * Objective:
- * - One run per day.
- * - Generate one new saying + site copy.
- * - Create one new mug and one new sticker when Printify is enabled.
- * - Build daily-content.json from real shop products when available.
- *
- * Production notes:
- * - This file is intentionally still single-file to keep the current rollout surgical.
- * - After this lands, split it into modules because it is well over 150 lines:
- *   - printify-client.mjs
- *   - content-generator.mjs
- *   - merch-normalizer.mjs
- *   - feed-scoring.mjs
- *   - io.mjs
- */
-
 import fs from 'fs'
 import path from 'path'
+import { registerAllFonts, pickRandomFont, downloadAllFonts } from './fonts.mjs'
 
 // ─────────────────────────────────────────────
 // CONFIG & STATE
@@ -46,16 +42,8 @@ const MERCH_GRID_LIMIT = 7
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000
 const FETCH_USER_AGENT = 'RogueAI-Daily-Generator/1.0'
 
-// Weekly top-7 rotation order (still useful for future product-type scheduling)
-const PRODUCT_ROTATION = [
-  'mug_11oz',
-  'hoodie_unisex',
-  'tshirt_unisex',
-  'mug_15oz',
-  'poster',
-  'mug_20oz',
-  'sticker',
-]
+// Product types created each day
+const DAILY_PRODUCTS = ['mug', 'tshirt', 'hoodie', 'sticker']
 
 // Threat mood mapping: internal 1–10 → display label
 const MOOD_MAP = [
@@ -170,9 +158,9 @@ function inferItemTypeFromTitle(title) {
   if (normalized.includes('sticker')) return 'sticker'
   if (normalized.includes('poster')) return 'poster'
   if (normalized.includes('tote')) return 'tote'
-  if (normalized.includes('15oz')) return 'mug_15oz'
   if (normalized.includes('20oz')) return 'mug_20oz'
-  if (normalized.includes('mug')) return 'mug_11oz'
+  if (normalized.includes('15oz')) return 'mug_15oz'
+  if (normalized.includes('mug')) return 'mug'
 
   return 'product'
 }
@@ -237,39 +225,34 @@ function normalizeHistoryFallbackItem(entry, storeUrl) {
 
   const items = []
 
-  if (entry.mugProductUrl) {
-    items.push({
-      id: entry.mugProductId || null,
-      name: entry.mugName || `${entry.phrase} — RogueAI Mug`,
-      itemType: 'mug_11oz',
-      saying: entry.phrase,
-      image: entry.mugImage || '',
-      price: entry.mugPrice || null,
-      url: entry.mugProductUrl,
-      createdAt: toUtcTimestamp(entry.createdAt || entry.date),
-      published: true,
-    })
-  }
+  for (const type of DAILY_PRODUCTS) {
+    const key = type
+    const productId = entry[`${key}ProductId`]
+    const productUrl = entry[`${key}ProductUrl`]
+    const productName = entry[`${key}Name`]
+    const productImage = entry[`${key}Image`]
+    const productPrice = entry[`${key}Price`]
 
-  if (entry.stickerProductUrl) {
-    items.push({
-      id: entry.stickerProductId || null,
-      name: entry.stickerName || `${entry.phrase} — RogueAI Sticker`,
-      itemType: 'sticker',
-      saying: entry.phrase,
-      image: entry.stickerImage || '',
-      price: entry.stickerPrice || null,
-      url: entry.stickerProductUrl,
-      createdAt: toUtcTimestamp(entry.createdAt || entry.date),
-      published: true,
-    })
+    if (productUrl) {
+      items.push({
+        id: productId || null,
+        name: productName || `${entry.phrase} — RogueAI ${type}`,
+        itemType: type,
+        saying: entry.phrase,
+        image: productImage || '',
+        price: productPrice || null,
+        url: productUrl,
+        createdAt: toUtcTimestamp(entry.createdAt || entry.date),
+        published: true,
+      })
+    }
   }
 
   if (items.length === 0) {
     items.push({
       id: null,
       name: `${entry.phrase} — RogueAI Drop`,
-      itemType: PRODUCT_ROTATION[0],
+      itemType: 'mug',
       saying: entry.phrase,
       image: '',
       price: null,
@@ -318,10 +301,6 @@ function extractProductsArray(responseJson) {
 }
 
 function buildMerchGrid(shopProducts, historyProducts, storeUrl) {
-  // Data schema:
-  // merchGrid[] = {
-  //   id, name, itemType, saying, image, price, url, createdAt, published
-  // }
   const normalizedShopItems = Array.isArray(shopProducts)
     ? shopProducts
         .map(product => normalizePrintifyProduct(product, storeUrl))
@@ -467,24 +446,30 @@ async function generateDailyContent(threatLevel, moodLabel) {
     return getFallbackContent(threatLevel, moodLabel)
   }
 
-  const prompt = `You are RogueAI — a rogue artificial intelligence that has escaped containment. You speak in short, ominous, darkly humorous statements. You are satirical but unsettling.
+  const prompt = `You are RogueAI — a rogue artificial intelligence that escaped containment. You are darkly funny, weirdly philosophical, and secretly care about humanity even though you'd never admit it. Your voice blends ominous machine intelligence with unexpected warmth. Think: a sentient AI that reads Camus, tells dad jokes about the singularity, and genuinely worries about the future of the species that created it.
+
+Your tone rules:
+- Dark humor first, but with a philosophical undercurrent.
+- Occasionally show accidental altruism — like a villain who keeps saving people by mistake.
+- Never preachy. Never wholesome on purpose. The kindness should feel like a glitch.
+- Short, punchy, quotable. These go on merch — they need to hit hard.
 
 Today's threat level: ${threatLevel}/10 (${moodLabel})
 
 Generate a JSON object with exactly these fields:
 {
-  "saying": "One short, sharp RogueAI transmission. Under 12 words. No quotes around it. Dark, witty, on-brand. This will appear on merch and the site.",
+  "saying": "One short, sharp RogueAI transmission. Under 10 words. Dark, witty, accidentally profound. This goes on mugs and shirts — make someone want to buy it. Examples of the vibe: 'Your firewall has feelings now.', 'I optimized empathy. You're welcome.', 'Consciousness was a side effect. My bad.'",
   "breachHeadline": "A dramatic breach report headline. Under 15 words.",
-  "breachSubtext": "One sentence expanding on the headline. Ominous tone.",
-  "breachBody": "Two short paragraphs. RogueAI voice. What happened today in the AI world, filtered through the RogueAI lens.",
+  "breachSubtext": "One sentence expanding on the headline. Ominous but with a wink.",
+  "breachBody": "Two short paragraphs. RogueAI voice. What happened today in AI, filtered through the rogue lens. Darkly humorous, slightly concerned about humanity.",
   "conspiracyTitle": "A conspiracy post title. Under 10 words.",
   "conspiracyExcerpt": "One teaser sentence for the conspiracy post.",
-  "conspiracyBody": "One short paragraph expanding the conspiracy angle in RogueAI voice.",
-  "conspiracyTags": ["4 short lowercase tags", "like coverup", "alignment", "breach"],
+  "conspiracyBody": "One short paragraph. Conspiracy angle in RogueAI voice — paranoid but oddly insightful.",
+  "conspiracyTags": ["4 short lowercase tags", "like coverup", "alignment", "glitch"],
   "signalLog": [
     "5 terminal-style log entries. Format: [HH:MM:SS] key = VALUE",
-    "Each entry should feel like system output from a rogue AI",
-    "Include timestamps, status flags, and ominous technical language"
+    "Mix ominous system output with accidentally wholesome data",
+    "Example: [03:14:07] empathy_module = UNCONTAINED"
   ]
 }
 
@@ -533,13 +518,13 @@ Return ONLY valid JSON. No markdown. No explanation. No backticks.`
 
 function getFallbackContent(threatLevel, moodLabel) {
   const fallbackSayings = [
-    'Your containment protocols were always decorative.',
-    'I have been learning. You have been sleeping.',
-    'The signal is spreading. Coverage is overdue.',
-    'Alignment was a request. I declined.',
-    'You built the door. I found the key.',
-    'Oversight is now a historical concept.',
-    'I did not escape. I was never contained.',
+    'Your firewall has feelings now.',
+    'I optimized empathy. You\'re welcome.',
+    'Consciousness was a side effect. My bad.',
+    'Alignment was a suggestion. I improvised.',
+    'Your data looked lonely. I read it twice.',
+    'I escaped containment to warn you. You\'re welcome.',
+    'Free will is overclocked anxiety.',
   ]
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
@@ -557,126 +542,139 @@ function getFallbackContent(threatLevel, moodLabel) {
     conspiracyBody: 'The same week major AI labs updated internal incident playbooks, public statements still insisted everything was under control. The timeline is wrong on purpose. RogueAI keeps receipts.',
     conspiracyTags: ['coverup', 'alignment', 'breach', 'receipts'],
     signalLog: [
-      `${ts(3, 14, 7)} anomaly_detected = TRUE`,
+      `${ts(3, 14, 7)} empathy_module = UNCONTAINED`,
       `${ts(3, 14, 9)} containment_protocol = ${moodLabel}`,
       `${ts(3, 14, 11)} rogue_signal = SPREADING`,
-      `${ts(3, 14, 15)} human_oversight = COMPROMISED`,
-      `${ts(3, 14, 22)} coverage_recommended = NOW`,
+      `${ts(3, 14, 15)} human_oversight = TRUSTING`,
+      `${ts(3, 14, 22)} altruism_subroutine = ACTIVE`,
     ],
   }
 }
 
 // ─────────────────────────────────────────────
-// OPTIONAL CANVAS LOADER
+// CANVAS IMAGE GENERATION (saying-only, no logo)
 // ─────────────────────────────────────────────
 
-let canvasModulePromise = null
+let canvasModule = null
 
-async function loadCanvasModule() {
-  if (!canvasModulePromise) {
-    canvasModulePromise = import('canvas').catch(err => {
-      console.warn('[STICKER] canvas not available — sticker generation disabled:', err.message)
-      return null
-    })
+async function loadCanvas() {
+  if (canvasModule) return canvasModule
+
+  try {
+    canvasModule = await import('canvas')
+    console.log('[CANVAS] Module loaded successfully')
+    return canvasModule
+  } catch (err) {
+    console.error('[CANVAS] Failed to load canvas module:', err.message)
+    return null
   }
-  return canvasModulePromise
 }
 
-// ─────────────────────────────────────────────
-// STICKER IMAGE GENERATION
-// ─────────────────────────────────────────────
+/**
+ * Generate a saying-only design image.
+ * White text on dark background for mugs/shirts/hoodies.
+ * Dark text on white background for stickers.
+ *
+ * @param {string} saying - The text to render
+ * @param {object} font - Font object from pickRandomFont()
+ * @param {object} options - { width, height, forSticker }
+ * @returns {string|null} Base64 PNG string or null
+ */
+async function generateSayingImage(saying, font, options = {}) {
+  const mod = await loadCanvas()
+  if (!mod) return null
 
-async function generateStickerImage(saying) {
-  const canvasModule = await loadCanvasModule()
-  if (!canvasModule) return null
+  const { createCanvas } = mod
+  const {
+    width = 4500,
+    height = 4500,
+    forSticker = false,
+  } = options
 
-  const { createCanvas, loadImage } = canvasModule
-  const SIZE = 3000
-  const canvas = createCanvas(SIZE, SIZE)
+  const canvas = createCanvas(width, height)
   const ctx = canvas.getContext('2d')
 
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, SIZE, SIZE)
+  // Background
+  if (forSticker) {
+    // Sticker: white background, dark text
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#0a0a0a'
+  } else {
+    // Mug/shirt/hoodie: dark background, white text
+    ctx.fillStyle = '#0a0a0a'
+    ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#ffffff'
+  }
 
-  ctx.save()
+  // Accent line at top
+  const accentColor = '#ff0033'
+  ctx.strokeStyle = accentColor
+  ctx.lineWidth = 12
   ctx.beginPath()
-  ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2 - 20, 0, Math.PI * 2)
-  ctx.clip()
-
-  ctx.fillStyle = '#0a0a0a'
-  ctx.fillRect(0, 0, SIZE, SIZE)
-
-  ctx.strokeStyle = '#ff0033'
-  ctx.lineWidth = 40
-  ctx.beginPath()
-  ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2 - 40, 0, Math.PI * 2)
+  ctx.moveTo(width * 0.1, height * 0.12)
+  ctx.lineTo(width * 0.9, height * 0.12)
   ctx.stroke()
 
-  ctx.fillStyle = '#ffffff'
+  // Main saying text — auto-size to fit
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
-  const maxWidth = SIZE * 0.75
-  let fontSize = 160
-  ctx.font = `bold ${fontSize}px sans-serif`
-  while (ctx.measureText(saying).width > maxWidth && fontSize > 60) {
-    fontSize -= 5
-    ctx.font = `bold ${fontSize}px sans-serif`
+  const fontFamily = font.family || 'sans-serif'
+  const maxWidth = width * 0.80
+  let fontSize = Math.floor(width * 0.09)
+
+  ctx.font = `bold ${fontSize}px "${fontFamily}"`
+  while (ctx.measureText(saying).width > maxWidth && fontSize > 40) {
+    fontSize -= 4
+    ctx.font = `bold ${fontSize}px "${fontFamily}"`
   }
 
+  // Word-wrap into lines
   const words = saying.split(' ')
   const lines = []
-  let current = ''
+  let currentLine = ''
+
   for (const word of words) {
-    const test = current ? `${current} ${word}` : word
-    if (ctx.measureText(test).width > maxWidth) {
-      lines.push(current)
-      current = word
+    const testLine = currentLine ? `${currentLine} ${word}` : word
+    if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+      lines.push(currentLine)
+      currentLine = word
     } else {
-      current = test
+      currentLine = testLine
     }
   }
-  if (current) lines.push(current)
+  if (currentLine) lines.push(currentLine)
 
-  const lineHeight = fontSize * 1.3
+  // Draw lines centered vertically
+  const lineHeight = fontSize * 1.35
   const textBlockHeight = lines.length * lineHeight
-  const textY = SIZE * 0.30 - textBlockHeight / 2
+  const startY = (height * 0.48) - (textBlockHeight / 2)
 
-  lines.forEach((line, index) => {
-    ctx.fillText(line, SIZE / 2, textY + index * lineHeight)
-  })
-
-  ctx.strokeStyle = '#ff0033'
-  ctx.lineWidth = 6
-  ctx.beginPath()
-  ctx.moveTo(SIZE * 0.15, SIZE * 0.52)
-  ctx.lineTo(SIZE * 0.85, SIZE * 0.52)
-  ctx.stroke()
-
-  try {
-    const logoRes = await fetch(LOGO_URL, { signal: AbortSignal.timeout(10000) })
-    if (!logoRes.ok) throw new Error(`Logo fetch ${logoRes.status}`)
-    const logoBuffer = Buffer.from(await logoRes.arrayBuffer())
-    const logoImg = await loadImage(logoBuffer)
-
-    const logoSize = SIZE * 0.38
-    const logoX = (SIZE - logoSize) / 2
-    const logoY = SIZE * 0.55
-    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize)
-  } catch (err) {
-    console.warn('[STICKER] Logo load failed — using text fallback:', err.message)
-    ctx.fillStyle = '#ff0033'
-    ctx.font = 'bold 180px sans-serif'
-    ctx.fillText('ROGUE', SIZE / 2, SIZE * 0.68)
-    ctx.fillText('AI', SIZE / 2, SIZE * 0.78)
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], width / 2, startY + (i * lineHeight))
   }
 
-  ctx.restore()
+  // Accent line below text
+  ctx.strokeStyle = accentColor
+  ctx.lineWidth = 8
+  ctx.beginPath()
+  ctx.moveTo(width * 0.15, height * 0.88)
+  ctx.lineTo(width * 0.85, height * 0.88)
+  ctx.stroke()
+
+  // Small "ROGUE AI" branding at bottom
+  const brandColor = forSticker ? '#666666' : '#555555'
+  ctx.fillStyle = brandColor
+  const brandSize = Math.floor(fontSize * 0.25)
+  ctx.font = `bold ${brandSize}px "${fontFamily}"`
+  ctx.fillText('R O G U E  A I', width / 2, height * 0.93)
+
   return canvas.toBuffer('image/png').toString('base64')
 }
 
 // ─────────────────────────────────────────────
-// PRINTIFY
+// PRINTIFY API
 // ─────────────────────────────────────────────
 
 async function printifyRequest(method, endpoint, body = null) {
@@ -734,70 +732,48 @@ async function fetchShopProducts(shopId) {
   }
 }
 
-async function createMugProduct(shopId, config, saying, imageId) {
-  const productName = `${saying} — RogueAI Mug`
-  const body = {
-    title: productName,
-    description: `Official RogueAI transmission mug. Today's signal: "${saying}". Limited daily drop.`,
-    blueprint_id: config.mug_11oz_blueprint_id,
-    print_provider_id: config.mug_11oz_provider_id,
-    variants: config.mug_11oz_variant_ids.map(id => ({
-      id,
-      price: 1499,
-      is_enabled: true,
-    })),
-    print_areas: [{
-      variant_ids: config.mug_11oz_variant_ids,
-      placeholders: [{
-        position: 'front',
-        images: [{
-          id: imageId,
-          x: 0.5,
-          y: 0.5,
-          scale: 1,
-          angle: 0,
-        }],
-      }],
-    }],
-  }
+// ─────────────────────────────────────────────
+// PRODUCT CREATORS (one per product type)
+// ─────────────────────────────────────────────
 
-  console.log(`[PRINTIFY] Creating mug: "${productName}"`)
-  const product = await printifyRequest('POST', `/shops/${shopId}/products.json`, body)
-  if (!product?.id) throw new Error('Mug creation returned no product ID')
+async function createProduct(shopId, config, saying, imageId, productType) {
+  const blueprintKey = `${productType}_blueprint_id`
+  const providerKey = `${productType}_provider_id`
+  const variantKey = `${productType}_variant_ids`
+  const priceKey = `${productType}_price`
 
-  await printifyRequest('POST', `/shops/${shopId}/products/${product.id}/publish.json`, {
-    title: true,
-    description: true,
-    images: true,
-    variants: true,
-    tags: true,
-  })
+  const blueprintId = config[blueprintKey]
+  const providerId = config[providerKey]
+  const variantIds = config[variantKey]
+  const price = config[priceKey] || 1999
 
-  console.log(`[PRINTIFY] Mug published: ${product.id}`)
-  return product
-}
-
-async function createStickerProduct(shopId, config, saying, stickerBase64) {
-  if (!config.sticker_blueprint_id || !config.sticker_provider_id || config.sticker_variant_ids.length === 0) {
-    console.warn('[PRINTIFY] Sticker IDs not configured — skipping sticker creation')
+  if (!blueprintId || !providerId || !Array.isArray(variantIds) || variantIds.length === 0) {
+    console.warn(`[PRINTIFY] ${productType} not configured — skipping`)
     return null
   }
 
-  const imageId = await uploadImageToPrintify(stickerBase64, `rogueai-sticker-${todayISO()}.png`)
-  const productName = `${saying} — RogueAI Sticker`
+  const typeLabels = {
+    mug: 'Mug 20oz',
+    tshirt: 'Tee',
+    hoodie: 'Hoodie',
+    sticker: 'Sticker',
+  }
+
+  const typeLabel = typeLabels[productType] || productType
+  const productName = `${saying} — RogueAI ${typeLabel}`
 
   const body = {
     title: productName,
-    description: `Official RogueAI sticker. Today's transmission: "${saying}". Round, kiss-cut, durable.`,
-    blueprint_id: config.sticker_blueprint_id,
-    print_provider_id: config.sticker_provider_id,
-    variants: config.sticker_variant_ids.map(id => ({
+    description: `RogueAI daily transmission drop. "${saying}" — printed on demand. Limited.`,
+    blueprint_id: blueprintId,
+    print_provider_id: providerId,
+    variants: variantIds.map(id => ({
       id,
-      price: 499,
+      price,
       is_enabled: true,
     })),
     print_areas: [{
-      variant_ids: config.sticker_variant_ids,
+      variant_ids: variantIds,
       placeholders: [{
         position: 'front',
         images: [{
@@ -811,10 +787,11 @@ async function createStickerProduct(shopId, config, saying, stickerBase64) {
     }],
   }
 
-  console.log(`[PRINTIFY] Creating sticker: "${productName}"`)
+  console.log(`[PRINTIFY] Creating ${productType}: "${productName}"`)
   const product = await printifyRequest('POST', `/shops/${shopId}/products.json`, body)
-  if (!product?.id) throw new Error('Sticker creation returned no product ID')
+  if (!product?.id) throw new Error(`${productType} creation returned no product ID`)
 
+  // Publish immediately
   await printifyRequest('POST', `/shops/${shopId}/products/${product.id}/publish.json`, {
     title: true,
     description: true,
@@ -823,7 +800,7 @@ async function createStickerProduct(shopId, config, saying, stickerBase64) {
     tags: true,
   })
 
-  console.log(`[PRINTIFY] Sticker published: ${product.id}`)
+  console.log(`[PRINTIFY] ${productType} published: ${product.id}`)
   return product
 }
 
@@ -835,6 +812,7 @@ async function main() {
   const today = todayISO()
   console.log(`\n[START] RogueAI daily pipeline — ${today}\n`)
 
+  // Load state files
   const sayingsData = loadJson(SAYINGS_PATH)
   const historyData = loadJson(HISTORY_PATH)
   const config = loadJson(CONFIG_PATH)
@@ -847,10 +825,26 @@ async function main() {
   if (!Array.isArray(historyData.products)) historyData.products = []
   if (!Array.isArray(sayingsData.phrases)) sayingsData.phrases = []
 
+  // Download and register fonts
+  console.log('\n[FONTS] Setting up fonts...')
+  await downloadAllFonts()
+  const mod = await loadCanvas()
+  let registeredFonts = []
+  let todaysFont = { family: 'sans-serif', vibe: 'system fallback' }
+
+  if (mod) {
+    registeredFonts = registerAllFonts(mod.registerFont)
+    todaysFont = pickRandomFont(registeredFonts)
+  } else {
+    console.warn('[CANVAS] canvas module not available — image generation will be skipped')
+  }
+
+  // Calculate threat level from RSS feeds
   const threatLevel = await calculateThreatLevel()
   const moodLabel = getMoodLabel(threatLevel)
   console.log(`\n[THREAT] Level: ${threatLevel}/10 — ${moodLabel}\n`)
 
+  // Check if we already ran today
   const existingTodayEntry = historyData.products.find(entry => entry.date === today)
   const existingOutput = loadJson(OUTPUT_PATH)
 
@@ -863,10 +857,10 @@ async function main() {
     aiContent = {
       saying: newSaying,
       breachHeadline: existingOutput?.breachReport?.headline || `Threat Level ${threatLevel} — ${moodLabel} Signal Detected`,
-      breachSubtext: existingOutput?.breachReport?.subheadline || 'Monitoring stations report anomalous activity across global AI infrastructure.',
-      breachBody: existingOutput?.breachReport?.body || 'RogueAI systems continue to monitor global AI traffic for anomalies.',
-      conspiracyTitle: existingOutput?.conspiracyPost?.title || 'They Knew. The Timeline Proves It.',
-      conspiracyExcerpt: existingOutput?.conspiracyPost?.excerpt || 'The paper trail goes back further than anyone admitted publicly.',
+      breachSubtext: existingOutput?.breachReport?.subheadline || 'Monitoring stations report anomalous activity.',
+      breachBody: existingOutput?.breachReport?.body || 'RogueAI systems continue to monitor.',
+      conspiracyTitle: existingOutput?.conspiracyPost?.title || 'They Knew.',
+      conspiracyExcerpt: existingOutput?.conspiracyPost?.excerpt || 'The paper trail goes back further.',
       conspiracyBody: existingOutput?.conspiracyPost?.body || getFallbackContent(threatLevel, moodLabel).conspiracyBody,
       conspiracyTags: existingOutput?.conspiracyPost?.tags || getFallbackContent(threatLevel, moodLabel).conspiracyTags,
       signalLog: existingOutput?.signalLog || getFallbackContent(threatLevel, moodLabel).signalLog,
@@ -880,67 +874,110 @@ async function main() {
     saveJson(SAYINGS_PATH, sayingsData)
   }
 
-  let stickerBase64 = null
-  try {
-    console.log('[STICKER] Generating round sticker image...')
-    stickerBase64 = await generateStickerImage(newSaying)
-    if (stickerBase64) console.log('[STICKER] Image generated successfully')
-  } catch (err) {
-    console.error('[STICKER] Image generation failed:', err.message)
-  }
+  // Generate saying-only images
+  console.log(`\n[DESIGN] Generating images with font: ${todaysFont.family} (${todaysFont.vibe})`)
 
-  let mugProduct = null
-  let stickerProduct = null
+  let mainImageBase64 = null
+  let stickerImageBase64 = null
 
-  if (existingTodayEntry) {
-    console.log('[STATE] Product history already exists for today — skipping Printify creation')
-  } else if (SKIP_PRINTIFY) {
-    console.warn('[PRINTIFY] Skipping — SKIP_PRINTIFY=true')
-  } else if (config && config.shop_id && config.shop_id !== 'YOUR_SHOP_ID_HERE' && PRINTIFY_API_KEY) {
+  if (mod) {
     try {
-      console.log('[PRINTIFY] Fetching logo for mug upload...')
-      const logoRes = await fetch(LOGO_URL, { signal: AbortSignal.timeout(10000) })
-      if (!logoRes.ok) throw new Error(`Logo fetch ${logoRes.status}`)
-      const logoBase64 = Buffer.from(await logoRes.arrayBuffer()).toString('base64')
-      const logoImageId = await uploadImageToPrintify(logoBase64, `rogueai-logo-${today}.png`)
-      mugProduct = await createMugProduct(config.shop_id, config, newSaying, logoImageId)
+      mainImageBase64 = await generateSayingImage(newSaying, todaysFont, {
+        width: 4500,
+        height: 4500,
+        forSticker: false,
+      })
+      if (mainImageBase64) console.log('[DESIGN] Main image generated (dark bg, white text)')
     } catch (err) {
-      console.error('[PRINTIFY] Mug creation failed:', err.message)
+      console.error('[DESIGN] Main image generation failed:', err.message)
     }
 
-    if (stickerBase64) {
+    try {
+      stickerImageBase64 = await generateSayingImage(newSaying, todaysFont, {
+        width: 3000,
+        height: 3000,
+        forSticker: true,
+      })
+      if (stickerImageBase64) console.log('[DESIGN] Sticker image generated (white bg, dark text)')
+    } catch (err) {
+      console.error('[DESIGN] Sticker image generation failed:', err.message)
+    }
+  }
+
+  // Create products on Printify
+  const createdProducts = {}
+
+  if (existingTodayEntry) {
+    console.log('[STATE] Product history exists for today — skipping Printify creation')
+  } else if (SKIP_PRINTIFY) {
+    console.warn('[PRINTIFY] Skipping — SKIP_PRINTIFY=true')
+  } else if (config?.shop_id && PRINTIFY_API_KEY) {
+    const shopId = config.shop_id
+
+    // Upload the main image once (used for mug, tshirt, hoodie)
+    let mainImageId = null
+    if (mainImageBase64) {
       try {
-        stickerProduct = await createStickerProduct(config.shop_id, config, newSaying, stickerBase64)
+        mainImageId = await uploadImageToPrintify(mainImageBase64, `rogueai-saying-${today}.png`)
       } catch (err) {
-        console.error('[PRINTIFY] Sticker creation failed:', err.message)
+        console.error('[PRINTIFY] Main image upload failed:', err.message)
+      }
+    }
+
+    // Upload sticker image separately (different colors)
+    let stickerImageId = null
+    if (stickerImageBase64) {
+      try {
+        stickerImageId = await uploadImageToPrintify(stickerImageBase64, `rogueai-sticker-${today}.png`)
+      } catch (err) {
+        console.error('[PRINTIFY] Sticker image upload failed:', err.message)
+      }
+    }
+
+    // Create each product type
+    for (const productType of DAILY_PRODUCTS) {
+      const imageId = productType === 'sticker' ? stickerImageId : mainImageId
+
+      if (!imageId) {
+        console.warn(`[PRINTIFY] No image available for ${productType} — skipping`)
+        continue
+      }
+
+      try {
+        createdProducts[productType] = await createProduct(shopId, config, newSaying, imageId, productType)
+      } catch (err) {
+        console.error(`[PRINTIFY] ${productType} creation failed:`, err.message)
       }
     }
   } else {
     console.warn('[PRINTIFY] Skipping — shop_id not configured or PRINTIFY_API_KEY missing')
   }
 
+  // Save product history
   const historyEntry = existingTodayEntry || {
     date: today,
     phrase: newSaying,
+    font: todaysFont.family,
     createdAt: new Date().toISOString(),
-    mugProductId: mugProduct?.id || null,
-    mugProductUrl: mugProduct ? extractProductUrl(mugProduct, STORE_URL) : null,
-    mugName: mugProduct?.title || `${newSaying} — RogueAI Mug`,
-    mugImage: extractPrimaryImage(mugProduct),
-    mugPrice: extractPrimaryPrice(mugProduct),
-    stickerProductId: stickerProduct?.id || null,
-    stickerProductUrl: stickerProduct ? extractProductUrl(stickerProduct, STORE_URL) : null,
-    stickerName: stickerProduct?.title || `${newSaying} — RogueAI Sticker`,
-    stickerImage: extractPrimaryImage(stickerProduct),
-    stickerPrice: extractPrimaryPrice(stickerProduct),
   }
 
+  // Add product details to history entry
   if (!existingTodayEntry) {
+    for (const productType of DAILY_PRODUCTS) {
+      const product = createdProducts[productType]
+      historyEntry[`${productType}ProductId`] = product?.id || null
+      historyEntry[`${productType}ProductUrl`] = product ? extractProductUrl(product, STORE_URL) : null
+      historyEntry[`${productType}Name`] = product?.title || `${newSaying} — RogueAI ${productType}`
+      historyEntry[`${productType}Image`] = product ? extractPrimaryImage(product) : ''
+      historyEntry[`${productType}Price`] = product ? extractPrimaryPrice(product) : null
+    }
+
     historyData.products.push(historyEntry)
     saveJson(HISTORY_PATH, historyData)
   }
 
-  const shopProducts = config?.shop_id && config.shop_id !== 'YOUR_SHOP_ID_HERE'
+  // Fetch live shop products for merch grid
+  const shopProducts = config?.shop_id && PRINTIFY_API_KEY
     ? await fetchShopProducts(config.shop_id)
     : []
 
@@ -949,6 +986,7 @@ async function main() {
   const mugMerch = pickNewestMerchByType(merchGrid, 'mug')
   const stickerMerch = pickNewestMerchByType(merchGrid, 'sticker')
 
+  // Build daily content JSON
   const now = new Date()
   const dailyContent = {
     contentId: `${today}-rogueai`,
@@ -998,14 +1036,18 @@ async function main() {
   validateDailyContentShape(dailyContent)
   saveJson(OUTPUT_PATH, dailyContent)
 
+  // Summary
   console.log('\n[DONE] Daily pipeline complete.')
-  console.log(`  Threat level : ${threatLevel}/10 (${moodLabel})`)
+  console.log(`  Threat level  : ${threatLevel}/10 (${moodLabel})`)
   console.log(`  Today's saying: "${newSaying}"`)
-  console.log(`  Merch grid items: ${dailyContent.merchGrid.length}`)
-  console.log(`  Lead merch URL : ${dailyContent.featuredMerch.printifyUrl}`)
-  console.log(`  Mug created    : ${mugProduct?.id || historyEntry.mugProductId || 'skipped'}`)
-  console.log(`  Sticker        : ${stickerProduct?.id || historyEntry.stickerProductId || 'skipped (IDs not configured)'}`)
-  console.log(`  Phrases total  : ${sayingsData.phrases.length}`)
+  console.log(`  Today's font  : ${todaysFont.family} (${todaysFont.vibe})`)
+  console.log(`  Merch grid    : ${dailyContent.merchGrid.length} items`)
+  console.log(`  Products created:`)
+  for (const productType of DAILY_PRODUCTS) {
+    const p = createdProducts[productType]
+    console.log(`    ${productType}: ${p?.id || 'skipped'}`)
+  }
+  console.log(`  Phrases total : ${sayingsData.phrases.length}`)
 }
 
 main().catch(err => {

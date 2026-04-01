@@ -7,10 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "generate": "node scripts/generate-content.mjs",
+    "fonts": "node scripts/fonts.mjs --download-only",
     "validate:merch": "node ./scripts/validate-merch-pipeline.mjs",
     "publish:next": "node ./scripts/publish-next-approved.mjs"
   },
   "dependencies": {
+    "canvas": "^3.1.0",
     "node-fetch": "^3.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

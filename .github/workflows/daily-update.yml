@@ -2,11 +2,11 @@ name: Daily RogueAI Content + Merch Pipeline
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
-  update-content:
+  daily-pipeline:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -20,11 +20,29 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install system dependencies for canvas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
+
+      - name: Install npm dependencies
         run: npm ci
 
-      - name: Run RogueAI pipeline
+      - name: Download fonts
+        run: node scripts/fonts.mjs --download-only
+        env:
+          NODE_ENV: production
+
+      - name: Run RogueAI daily pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ROGUEAI }}
           PRINTIFY_API_KEY: ${{ secrets.ROGUEAI_PRINTIFY }}
-        run: npm run validate:merch && npm run publish:next
+        run: node scripts/generate-content.mjs
+
+      - name: Commit updated state files
+        run: |
+          git config user.name "RogueAI Pipeline"
+          git config user.email "divclass01@gmail.com"
+          git add public/daily-content.json scripts/product-history.json scripts/rogueai-sayings.json
+          git diff --cached --quiet || git commit -m "Daily pipeline run $(date -u +%Y-%m-%d)"
+          git push
