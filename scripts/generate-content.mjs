@@ -856,11 +856,20 @@ async function main() {
   const existingTodayEntry = historyData.products.find(entry => entry.date === today)
   const existingOutput = loadJson(OUTPUT_PATH)
 
+  // State-first:
+  // Figure out what is missing for today before we decide whether to skip.
+  const missingProductTypes = getMissingProductTypes(existingTodayEntry)
+  const canReuseTodayContent =
+    Boolean(existingTodayEntry) &&
+    existingOutput?.contentId === `${today}-rogueai`
+
   let aiContent
   let newSaying
 
-  if (existingTodayEntry && existingOutput?.contentId === `${today}-rogueai`) {
+  if (canReuseTodayContent) {
     console.log('[STATE] Existing run found for today — reusing phrase and content')
+    console.log(`[STATE] Missing product types for rerun: ${missingProductTypes.join(', ') || 'none'}`)
+
     newSaying = existingTodayEntry.phrase
     aiContent = {
       saying: newSaying,
@@ -895,7 +904,9 @@ async function main() {
         height: 4500,
         forSticker: false,
       })
-      if (mainImageBase64) console.log('[DESIGN] Main image generated (transparent bg, white text)')
+
+      // Accurate log message for the current renderer behavior
+      if (mainImageBase64) console.log('[DESIGN] Main image generated (transparent bg, dark text)')
     } catch (err) {
       console.error('[DESIGN] Main image generation failed:', err.message)
     }
@@ -906,6 +917,7 @@ async function main() {
         height: 3000,
         forSticker: true,
       })
+
       if (stickerImageBase64) console.log('[DESIGN] Sticker image generated (white bg, dark text)')
     } catch (err) {
       console.error('[DESIGN] Sticker image generation failed:', err.message)
@@ -915,8 +927,8 @@ async function main() {
   // Create products on Printify
   const createdProducts = {}
 
-  if (existingTodayEntry) {
-    console.log('[STATE] Product history exists for today — skipping Printify creation')
+  if (existingTodayEntry && missingProductTypes.length === 0) {
+    console.log('[STATE] Product history for today is complete — skipping Printify creation')
   } else if (SKIP_PRINTIFY) {
     console.warn('[PRINTIFY] Skipping — SKIP_PRINTIFY=true')
   } else if (config?.shop_id && PRINTIFY_API_KEY) {
@@ -942,8 +954,13 @@ async function main() {
       }
     }
 
-    // Create each product type
+    // Create only the missing product types.
     for (const productType of DAILY_PRODUCTS) {
+      if (existingTodayEntry && hasHistoryProduct(existingTodayEntry, productType)) {
+        console.log(`[STATE] ${productType} already exists for today — reusing existing product`)
+        continue
+      }
+
       const imageId = productType === 'sticker' ? stickerImageId : mainImageId
 
       if (!imageId) {
@@ -961,7 +978,10 @@ async function main() {
     console.warn('[PRINTIFY] Skipping — shop_id not configured or PRINTIFY_API_KEY missing')
   }
 
-  // Save product history
+  // Save or update product history.
+  // This is the key fix:
+  // - if today already exists, we UPDATE that same entry
+  // - if today does not exist, we CREATE a new one
   const historyEntry = existingTodayEntry || {
     date: today,
     phrase: newSaying,
@@ -969,20 +989,33 @@ async function main() {
     createdAt: new Date().toISOString(),
   }
 
-  // Add product details to history entry
-  if (!existingTodayEntry) {
-    for (const productType of DAILY_PRODUCTS) {
-      const product = createdProducts[productType]
-      historyEntry[`${productType}ProductId`] = product?.id || null
-      historyEntry[`${productType}ProductUrl`] = product ? extractProductUrl(product, STORE_URL) : null
-      historyEntry[`${productType}Name`] = product?.title || `${newSaying} — RogueAI ${productType}`
-      historyEntry[`${productType}Image`] = product ? extractPrimaryImage(product) : ''
-      historyEntry[`${productType}Price`] = product ? extractPrimaryPrice(product) : null
-    }
+  for (const productType of DAILY_PRODUCTS) {
+    const product = createdProducts[productType]
 
-    historyData.products.push(historyEntry)
-    saveJson(HISTORY_PATH, historyData)
+    if (product) {
+      // Newly created product this run
+      historyEntry[`${productType}ProductId`] = product?.id || null
+      historyEntry[`${productType}ProductUrl`] = extractProductUrl(product, STORE_URL)
+      historyEntry[`${productType}Name`] = product?.title || `${newSaying} — RogueAI ${productType}`
+      historyEntry[`${productType}Image`] = extractPrimaryImage(product) || ''
+      historyEntry[`${productType}Price`] = extractPrimaryPrice(product) || null
+    } else {
+      // Preserve existing values when present.
+      // If still missing, make sure the keys exist in the JSON.
+      if (historyEntry[`${productType}ProductId`] === undefined) historyEntry[`${productType}ProductId`] = null
+      if (historyEntry[`${productType}ProductUrl`] === undefined) historyEntry[`${productType}ProductUrl`] = null
+      if (historyEntry[`${productType}Name`] === undefined) historyEntry[`${productType}Name`] = `${newSaying} — RogueAI ${productType}`
+      if (historyEntry[`${productType}Image`] === undefined) historyEntry[`${productType}Image`] = ''
+      if (historyEntry[`${productType}Price`] === undefined) historyEntry[`${productType}Price`] = null
+    }
   }
+
+  if (!existingTodayEntry) {
+    historyData.products.push(historyEntry)
+  }
+
+  // Always save, even on reruns, so partial entries can heal.
+  saveJson(HISTORY_PATH, historyData)
 
   // Fetch live shop products for merch grid
   const shopProducts = config?.shop_id && PRINTIFY_API_KEY
