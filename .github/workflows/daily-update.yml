@@ -45,4 +45,5 @@ jobs:
           git config user.email "divclass01@gmail.com"
           git add public/daily-content.json scripts/product-history.json scripts/rogueai-sayings.json
           git diff --cached --quiet || git commit -m "Daily pipeline run $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
           git push
