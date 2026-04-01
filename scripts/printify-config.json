@@ -1,29 +1,29 @@
 {
   "shop_id": "11214644",
 
-  "_comment_mug": "ORCA Coatings Jumbo Mug 20oz WHITE — verify variant ID at printify.com/app/products/1126",
+  "_comment_mug": "VERIFIED from live Printify catalog: Jumbo Mug, 20oz / Imagine Your Photos / White",
   "mug_blueprint_id": 1126,
-  "mug_provider_id": 28,
-  "mug_variant_ids": [89344],
+  "mug_provider_id": 59,
+  "mug_variant_ids": [84117],
   "mug_price": 1899,
 
-  "_comment_tshirt": "Bella+Canvas 3001 Unisex Jersey Tee WHITE — verify variant ID at printify.com/app/products/145",
+  "_comment_tshirt": "Working in live pipeline: Bella+Canvas 3001 Unisex Jersey Tee WHITE",
   "tshirt_blueprint_id": 145,
   "tshirt_provider_id": 402,
   "tshirt_variant_ids": [38155],
   "tshirt_price": 2499,
 
-  "_comment_hoodie": "Gildan 18500 Heavy Blend Hoodie WHITE — verify variant ID at printify.com/app/products/458",
+  "_comment_hoodie": "Working in live pipeline: Gildan 18500 Heavy Blend Hoodie WHITE",
   "hoodie_blueprint_id": 458,
   "hoodie_provider_id": 26,
   "hoodie_variant_ids": [63753],
   "hoodie_price": 3999,
 
-  "_comment_sticker": "Die-Cut Stickers WHITE — verify variant ID at printify.com/app/products/600",
+  "_comment_sticker": "VERIFIED from live Printify catalog: Die-Cut Sticker / Printed Simply / White / 3x3",
   "sticker_blueprint_id": 600,
   "sticker_provider_id": 73,
-  "sticker_variant_ids": [65003],
+  "sticker_variant_ids": [72007],
   "sticker_price": 499,
 
-  "_note": "All products WHITE only. Verify each variant ID is the white option in Printify dashboard. One variant per product keeps inventory clean and designs consistent."
+  "_note": "All products WHITE only. Mug and sticker IDs are now verified from the live Printify catalog inspector. Sticker size is set to 3x3 by default."
 }
