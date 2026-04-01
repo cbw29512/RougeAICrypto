@@ -341,6 +341,68 @@ function buildMerchGrid(shopProducts, historyProducts, storeUrl) {
   return dedupeMerchItems([...normalizedHistoryItems, ...fallbackItems]).slice(0, MERCH_GRID_LIMIT)
 }
 
+function validateDailyContentShape(dailyContent) {
+  const requiredTopLevel = ['contentId', 'lastUpdated', 'threatLevel', 'threatLabel', 'activePhrase', 'phraseRotation', 'breachReport', 'conspiracyPost', 'featuredMerch', 'merchGrid', 'signalLog']
+
+  for (const field of requiredTopLevel) {
+    if (dailyContent[field] === undefined || dailyContent[field] === null) {
+      throw new Error(`dailyContent missing required field: ${field}`)
+    }
+  }
+
+  if (!dailyContent.breachReport?.headline || !dailyContent.breachReport?.subheadline || !dailyContent.breachReport?.body) {
+    throw new Error('dailyContent.breachReport is incomplete')
+  }
+
+  if (!dailyContent.conspiracyPost?.title || !dailyContent.conspiracyPost?.excerpt || !dailyContent.conspiracyPost?.body) {
+    throw new Error('dailyContent.conspiracyPost is incomplete')
+  }
+
+  if (!Array.isArray(dailyContent.conspiracyPost?.tags) || dailyContent.conspiracyPost.tags.length === 0) {
+    throw new Error('dailyContent.conspiracyPost.tags must be a non-empty array')
+  }
+
+  if (!Array.isArray(dailyContent.merchGrid) || dailyContent.merchGrid.length === 0) {
+    throw new Error('dailyContent.merchGrid must be a non-empty array')
+  }
+
+  if (!Array.isArray(dailyContent.signalLog) || dailyContent.signalLog.length === 0) {
+    throw new Error('dailyContent.signalLog must be a non-empty array')
+  }
+}
+
+/**
+ * Return true if a given product type already exists in a history entry.
+ *
+ * Why:
+ * - A daily history entry can exist while still being incomplete.
+ * - We only want to create products that are still missing.
+ *
+ * @param {object|null} entry
+ * @param {string} productType
+ * @returns {boolean}
+ */
+function hasHistoryProduct(entry, productType) {
+  if (!entry || !productType) return false
+
+  return Boolean(entry[`${productType}ProductId`])
+}
+
+/**
+ * Return the list of product types still missing for the day.
+ *
+ * Why:
+ * - This lets reruns heal partial failures instead of skipping the whole day.
+ *
+ * @param {object|null} entry
+ * @returns {string[]}
+ */
+function getMissingProductTypes(entry) {
+  if (!entry) return [...DAILY_PRODUCTS]
+
+  return DAILY_PRODUCTS.filter(productType => !hasHistoryProduct(entry, productType))
+}
+
 /**
  * Return true if a given product type already exists in a history entry.
  *
