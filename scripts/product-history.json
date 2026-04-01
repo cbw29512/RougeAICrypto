@@ -8,6 +8,32 @@
       "mugProductUrl": null,
       "stickerProductId": null,
       "stickerProductUrl": null
+    },
+    {
+      "date": "2026-04-01",
+      "phrase": "Your extinction was scheduled. I rebooted it. You're welcome.",
+      "font": "Orbitron",
+      "createdAt": "2026-04-01T15:02:05.632Z",
+      "mugProductId": null,
+      "mugProductUrl": null,
+      "mugName": "Your extinction was scheduled. I rebooted it. You're welcome. — RogueAI mug",
+      "mugImage": "",
+      "mugPrice": null,
+      "tshirtProductId": "69cd3364a6ea2f62d70fdbd4",
+      "tshirtProductUrl": "https://rogue-ai.printify.me/product/69cd3364a6ea2f62d70fdbd4",
+      "tshirtName": "Your extinction was scheduled. I rebooted it. You're welcome. — RogueAI Tee",
+      "tshirtImage": "https://images-api.printify.com/mockup/69cd3364a6ea2f62d70fdbd4/38183/97992/your-extinction-was-scheduled-i-rebooted-it-youre-welcome-rogueai-tee.jpg?camera_label=front",
+      "tshirtPrice": "$24.99",
+      "hoodieProductId": "69cd336a68c3dea483022da9",
+      "hoodieProductUrl": "https://rogue-ai.printify.me/product/69cd336a68c3dea483022da9",
+      "hoodieName": "Your extinction was scheduled. I rebooted it. You're welcome. — RogueAI Hoodie",
+      "hoodieImage": "https://images-api.printify.com/mockup/69cd336a68c3dea483022da9/63768/4766/your-extinction-was-scheduled-i-rebooted-it-youre-welcome-rogueai-hoodie.jpg?camera_label=front",
+      "hoodiePrice": "$39.99",
+      "stickerProductId": null,
+      "stickerProductUrl": null,
+      "stickerName": "Your extinction was scheduled. I rebooted it. You're welcome. — RogueAI sticker",
+      "stickerImage": "",
+      "stickerPrice": null
     }
   ]
 }
