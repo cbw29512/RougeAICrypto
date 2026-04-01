@@ -675,16 +675,32 @@ async function generateSayingImage(saying, font, options = {}) {
     ctx.textBaseline = 'middle'
 
     const fontFamily = font.family || 'sans-serif'
-    const maxWidth = width * 0.80
-    let fontSize = Math.floor(width * 0.09)
 
-    // Start large, then shrink until the full saying fits.
+    // Count words so short sayings get much bigger text.
+    const wordCount = saying.trim().split(/\s+/).filter(Boolean).length
+
+    // Let the text use more horizontal space.
+    const maxWidth = width * 0.90
+
+    // Start bigger.
+    // Short phrases should look bold and large.
+    // Longer phrases still start bigger than before, but can shrink if needed.
+    let fontSize
+    if (wordCount <= 4) {
+      fontSize = Math.floor(width * 0.18)
+    } else if (wordCount <= 7) {
+      fontSize = Math.floor(width * 0.14)
+    } else {
+      fontSize = Math.floor(width * 0.11)
+    }
+
     ctx.font = `bold ${fontSize}px "${fontFamily}"`
 
-    while (ctx.measureText(saying).width > maxWidth && fontSize > 40) {
-      fontSize -= 4
-      ctx.font = `bold ${fontSize}px "${fontFamily}"`
-    }
+// Shrink only if needed to fit.
+while (ctx.measureText(saying).width > maxWidth && fontSize > 40) {
+  fontSize -= 4
+  ctx.font = `bold ${fontSize}px "${fontFamily}"`
+}
 
     // Manual word-wrap:
     // We split the phrase into multiple centered lines if needed.
@@ -706,7 +722,7 @@ async function generateSayingImage(saying, font, options = {}) {
     if (currentLine) lines.push(currentLine)
 
     // Compute vertical centering for the whole text block.
-    const lineHeight = fontSize * 1.35
+    const lineHeight = fontSize * 1.18
     const textBlockHeight = lines.length * lineHeight
     const startY = (height * 0.50) - (textBlockHeight / 2)
 
