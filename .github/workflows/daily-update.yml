@@ -5,6 +5,11 @@ on:
     - cron: '0 12 * * *'
   workflow_dispatch:
 
+# Prevent overlapping runs from fighting over the same generated files.
+concurrency:
+  group: rogueai-daily-pipeline-main
+  cancel-in-progress: false
+
 jobs:
   daily-pipeline:
     runs-on: ubuntu-latest
@@ -15,11 +20,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
+          # Full history helps Git behave predictably for pulls/pushes.
           fetch-depth: 0
+
+      - name: Sync branch before generation
+        run: |
+          # Pull FIRST, before generating files.
+          # This avoids rebasing a brand-new generated commit on top of other generated commits later.
+          git pull --ff-only origin main
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
+          # Move off Node 20 while we are here.
           node-version: '22'
 
       - name: Install system dependencies for canvas
@@ -46,13 +59,19 @@ jobs:
           git config user.name "RogueAI Pipeline"
           git config user.email "divclass01@gmail.com"
 
+          # Stage only the generated state files.
           git add public/daily-content.json scripts/product-history.json scripts/rogueai-sayings.json
 
+          # Exit cleanly if this run produced no changes.
           if git diff --cached --quiet; then
             echo "No state changes to commit"
             exit 0
           fi
 
+          # Commit generated state.
           git commit -m "Daily pipeline run $(date -u +%Y-%m-%d)"
-          git pull --rebase --autostash origin main
+
+          # Push directly.
+          # We intentionally do NOT rebase after committing generated files,
+          # because that is what caused the conflicts you just hit.
           git push origin HEAD:main
