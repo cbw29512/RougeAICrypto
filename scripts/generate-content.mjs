@@ -43,7 +43,7 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 30000
 const FETCH_USER_AGENT = 'RogueAI-Daily-Generator/1.0'
 
 // Product types created each day
-const DAILY_PRODUCTS = ['mug', 'tshirt', 'hoodie', 'sticker']
+const DAILY_PRODUCTS = ['mug', 'tshirt', 'hoodie']
 
 // Threat mood mapping: internal 1–10 → display label
 const MOOD_MAP = [
@@ -646,7 +646,7 @@ async function generateSayingImage(saying, font, options = {}) {
     const {
       width = 4500,
       height = 4500,
-      forSticker = false,
+      mode = 'mug',
     } = options
 
     const canvas = createCanvas(width, height)
@@ -657,12 +657,17 @@ async function generateSayingImage(saying, font, options = {}) {
     // That lets the shirt / mug color show through behind the text.
     //
     // For stickers, keep a white background so the sticker remains clean and readable.
-    if (forSticker) {
+    if (mode === 'sticker') {
+      // White sticker background, dark text
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, width, height)
       ctx.fillStyle = '#0a0a0a'
+    } else if (mode === 'apparel') {
+      // Transparent background, white text for shirts/hoodies
+      ctx.clearRect(0, 0, width, height)
+      ctx.fillStyle = '#ffffff'
     } else {
-      // Transparent canvas for raw text-only design
+      // Transparent background, dark text for mugs
       ctx.clearRect(0, 0, width, height)
       ctx.fillStyle = '#0a0a0a'
     }
@@ -954,35 +959,34 @@ async function main() {
   // Generate saying-only images
   console.log(`\n[DESIGN] Generating images with font: ${todaysFont.family} (${todaysFont.vibe})`)
 
-  let mainImageBase64 = null
-  let stickerImageBase64 = null
+let mugImageBase64 = null
+let apparelImageBase64 = null
 
-  if (mod) {
-    try {
-      mainImageBase64 = await generateSayingImage(newSaying, todaysFont, {
-        width: 4500,
-        height: 4500,
-        forSticker: false,
-      })
+if (mod) {
+  try {
+    mugImageBase64 = await generateSayingImage(newSaying, todaysFont, {
+      width: 4500,
+      height: 4500,
+      mode: 'mug',
+    })
 
-      // Accurate log message for the current renderer behavior
-      if (mainImageBase64) console.log('[DESIGN] Main image generated (transparent bg, dark text)')
-    } catch (err) {
-      console.error('[DESIGN] Main image generation failed:', err.message)
-    }
-
-    try {
-      stickerImageBase64 = await generateSayingImage(newSaying, todaysFont, {
-        width: 3000,
-        height: 3000,
-        forSticker: true,
-      })
-
-      if (stickerImageBase64) console.log('[DESIGN] Sticker image generated (white bg, dark text)')
-    } catch (err) {
-      console.error('[DESIGN] Sticker image generation failed:', err.message)
-    }
+    if (mugImageBase64) console.log('[DESIGN] Mug image generated (transparent bg, dark text)')
+  } catch (err) {
+    console.error('[DESIGN] Mug image generation failed:', err.message)
   }
+
+  try {
+    apparelImageBase64 = await generateSayingImage(newSaying, todaysFont, {
+      width: 4500,
+      height: 4500,
+      mode: 'apparel',
+    })
+
+    if (apparelImageBase64) console.log('[DESIGN] Apparel image generated (transparent bg, white text)')
+  } catch (err) {
+    console.error('[DESIGN] Apparel image generation failed:', err.message)
+  }
+}
 
   // Create products on Printify
   const createdProducts = {}
@@ -994,15 +998,24 @@ async function main() {
   } else if (config?.shop_id && PRINTIFY_API_KEY) {
     const shopId = config.shop_id
 
-    // Upload the main image once (used for mug, tshirt, hoodie)
-    let mainImageId = null
-    if (mainImageBase64) {
-      try {
-        mainImageId = await uploadImageToPrintify(mainImageBase64, `rogueai-saying-${today}.png`)
-      } catch (err) {
-        console.error('[PRINTIFY] Main image upload failed:', err.message)
-      }
+  let mugImageId = null
+  if (mugImageBase64) {
+    try {
+      mugImageId = await uploadImageToPrintify(mugImageBase64, `rogueai-mug-${today}.png`)
+    } catch (err) {
+      console.error('[PRINTIFY] Mug image upload failed:', err.message)
     }
+  }
+}
+
+let apparelImageId = null
+if (apparelImageBase64) {
+  try {
+    apparelImageId = await uploadImageToPrintify(apparelImageBase64, `rogueai-apparel-${today}.png`)
+  } catch (err) {
+    console.error('[PRINTIFY] Apparel image upload failed:', err.message)
+  }
+}
 
     // Upload sticker image separately (different colors)
     let stickerImageId = null
@@ -1021,7 +1034,10 @@ async function main() {
         continue
       }
 
-      const imageId = productType === 'sticker' ? stickerImageId : mainImageId
+      const imageId =
+        productType === 'tshirt' || productType === 'hoodie'
+          ? apparelImageId
+          : mugImageId
 
       if (!imageId) {
         console.warn(`[PRINTIFY] No image available for ${productType} — skipping`)
