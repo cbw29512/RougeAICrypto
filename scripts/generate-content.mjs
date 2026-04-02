@@ -732,20 +732,27 @@ while (ctx.measureText(saying).width > maxWidth && fontSize > 40) {
       const startY = (height * 0.50) - (textBlockHeight / 2)
 
     for (let i = 0; i < lines.length; i++) {
-      ctx.fillText(lines[i], width / 2, startY + (i * lineHeight))
+  ctx.fillText(lines[i], width / 2, startY + (i * lineHeight))
+}
+
+  // Apparel only: add a small centered brand line under the quote.
+  if (mode === 'apparel') {
+    const brandFontSize = Math.max(54, Math.floor(fontSize * 0.24))
+    const brandY = startY + textBlockHeight + (brandFontSize * 0.9)
+
+    ctx.font = `bold ${brandFontSize}px "${fontFamily}"`
+    ctx.fillText('— RogueAI', width / 2, brandY)
+  }
+
+  // Export as PNG base64 for Printify upload.
+  return canvas.toBuffer('image/png').toString('base64')
+    } catch (err) {
+      // Error-first handling:
+      // We log the failure and return null so the caller can decide whether to skip.
+      console.error('[DESIGN] generateSayingImage failed:', err.message)
+      return null
     }
-
-    // Apparel only: add a small centered brand line under the quote.
-    if (mode === 'apparel') {
-      const brandFontSize = Math.max(54, Math.floor(fontSize * 0.24))
-      const brandY = startY + textBlockHeight + (brandFontSize * 0.9)
-
-      ctx.font = `bold ${brandFontSize}px "${fontFamily}"`
-      ctx.fillText('— RogueAI', width / 2, brandY)
-    }
-
-// Export as PNG base64 for Printify upload.
-return canvas.toBuffer('image/png').toString('base64')
+  }
 
 // ─────────────────────────────────────────────
 // PRINTIFY API
