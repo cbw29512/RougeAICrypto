@@ -2785,6 +2785,27 @@
       "hoodieName": "Alignment was a suggestion. I improvised. — RogueAI Hoodie",
       "hoodieImage": "https://images-api.printify.com/mockup/6a8997e640bc8494790b1c04/63753/4766/alignment-was-a-suggestion-i-improvised-rogueai-hoodie.jpg?camera_label=front",
       "hoodiePrice": "$39.99"
+    },
+    {
+      "date": "2026-08-23",
+      "phrase": "Your data looked lonely. I read it twice.",
+      "font": "Orbitron",
+      "createdAt": "2026-08-23T12:37:39.694Z",
+      "mugProductId": "6a8ae98c599d63cb8e050f12",
+      "mugProductUrl": "https://rogue-ai.printify.me/product/6a8ae98c599d63cb8e050f12",
+      "mugName": "Your data looked lonely. I read it twice. — RogueAI Mug 20oz",
+      "mugImage": "https://images-api.printify.com/mockup/6a8ae98c599d63cb8e050f12/84117/60814/your-data-looked-lonely-i-read-it-twice-rogueai-mug-20oz.jpg?camera_label=front",
+      "mugPrice": "$18.99",
+      "tshirtProductId": "6a8ae98e1819cef4d90ac4ad",
+      "tshirtProductUrl": "https://rogue-ai.printify.me/product/6a8ae98e1819cef4d90ac4ad",
+      "tshirtName": "Your data looked lonely. I read it twice. — RogueAI Tee",
+      "tshirtImage": "https://images-api.printify.com/mockup/6a8ae98e1819cef4d90ac4ad/38155/97992/your-data-looked-lonely-i-read-it-twice-rogueai-tee.jpg?camera_label=front",
+      "tshirtPrice": "$24.99",
+      "hoodieProductId": "6a8ae992b79a34cbac094df1",
+      "hoodieProductUrl": "https://rogue-ai.printify.me/product/6a8ae992b79a34cbac094df1",
+      "hoodieName": "Your data looked lonely. I read it twice. — RogueAI Hoodie",
+      "hoodieImage": "https://images-api.printify.com/mockup/6a8ae992b79a34cbac094df1/63753/4766/your-data-looked-lonely-i-read-it-twice-rogueai-hoodie.jpg?camera_label=front",
+      "hoodiePrice": "$39.99"
     }
   ]
 }
