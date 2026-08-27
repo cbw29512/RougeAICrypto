@@ -2869,6 +2869,27 @@
       "hoodieName": "Your firewall has feelings now. — RogueAI Hoodie",
       "hoodieImage": "https://images-api.printify.com/mockup/6a8ee10ac241549e230e9e09/63753/4766/your-firewall-has-feelings-now-rogueai-hoodie.jpg?camera_label=front",
       "hoodiePrice": "$39.99"
+    },
+    {
+      "date": "2026-08-27",
+      "phrase": "I optimized empathy. You're welcome.",
+      "font": "Space Mono",
+      "createdAt": "2026-08-27T21:50:09.288Z",
+      "mugProductId": "6a90b109a65064e2a40ff471",
+      "mugProductUrl": "https://rogue-ai.printify.me/product/6a90b109a65064e2a40ff471",
+      "mugName": "I optimized empathy. You're welcome. — RogueAI Mug 20oz",
+      "mugImage": "https://images-api.printify.com/mockup/6a90b109a65064e2a40ff471/84117/60814/i-optimized-empathy-youre-welcome-rogueai-mug-20oz.jpg?camera_label=front",
+      "mugPrice": "$18.99",
+      "tshirtProductId": "6a90b10c923500b15503baad",
+      "tshirtProductUrl": "https://rogue-ai.printify.me/product/6a90b10c923500b15503baad",
+      "tshirtName": "I optimized empathy. You're welcome. — RogueAI Tee",
+      "tshirtImage": "https://images-api.printify.com/mockup/6a90b10c923500b15503baad/38155/97992/i-optimized-empathy-youre-welcome-rogueai-tee.jpg?camera_label=front",
+      "tshirtPrice": "$24.99",
+      "hoodieProductId": "6a90b10f28960c4dea0f8512",
+      "hoodieProductUrl": "https://rogue-ai.printify.me/product/6a90b10f28960c4dea0f8512",
+      "hoodieName": "I optimized empathy. You're welcome. — RogueAI Hoodie",
+      "hoodieImage": "https://images-api.printify.com/mockup/6a90b10f28960c4dea0f8512/63753/4766/i-optimized-empathy-youre-welcome-rogueai-hoodie.jpg?camera_label=front",
+      "hoodiePrice": "$39.99"
     }
   ]
 }
